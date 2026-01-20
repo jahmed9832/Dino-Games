@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="icon" type="image/jpeg" href="DinoLogo.png">
+    <title>DINO Game | Pro Mobile</title>
+    <style>
+        :root {
+            --sky-top: #0f172a;
+            --sky-bottom: #1e293b;
+            --ground: #eab308;
+            --dino-black: #000000;
+            --cactus-green: #22c55e;
+            --cloud-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            min-height: 100dvh; background: #020617;
+            font-family: 'Inter', sans-serif; overflow: hidden;
+            color: white; touch-action: none;
+        }
+
+        /* HEADER */
+        .header-panel {
+            width: 92vw; max-width: 700px;
+            display: flex; justify-content: space-between;
+            padding: 10px 15px; background: rgba(15, 23, 42, 0.95);
+            border-radius: 12px 12px 0 0; border: 1px solid rgba(255, 255, 255, 0.1);
+            box-sizing: border-box; z-index: 30;
+        }
+
+        .stat-label { color: #94a3b8; font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+        .stat-value { color: #fff; font-size: 18px; font-weight: 800; font-family: monospace; }
+
+        /* 16:9 CONTAINER */
+        .game-container {
+            position: relative;
+            width: 92vw; max-width: 700px;
+            aspect-ratio: 16 / 9;
+            background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+            border-radius: 0 0 12px 12px; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            transition: background 3s ease;
+            touch-action: manipulation; user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .game-title {
+            position: absolute; top: 12%; width: 100%; text-align: center;
+            font-size: 1.8rem; font-weight: 900; letter-spacing: 6px;
+            color: rgba(255, 255, 255, 0.1); text-transform: uppercase;
+            z-index: 1; pointer-events: none;
+        }
+
+        .cloud {
+            position: absolute;
+            background: var(--cloud-color);
+            z-index: 2;
+            transition: background 3s ease;
+            clip-path: polygon(25% 0%, 50% 0%, 75% 20%, 100% 20%, 100% 80%, 75% 100%, 25% 100%, 0% 80%, 0% 40%, 15% 20%);
+        }
+
+        .ground-floor {
+            position: absolute; bottom: 0; width: 100%; height: 12%;
+            background: var(--ground); border-top: 3px solid #ca8a04; z-index: 5;
+        }
+
+        /* REDUCED SIZE DINO WITH EYE */
+        #dino {
+            width: 38px; height: 38px; position: absolute;
+            bottom: 12%; left: 8%; background: var(--dino-black);
+            z-index: 10;
+            clip-path: polygon(
+                40% 0%, 90% 0%, 100% 10%, 100% 30%, 80% 35%, 85% 50%, 
+                60% 55%, 65% 70%, 80% 80%, 75% 100%, 55% 100%, 55% 80%, 
+                45% 80%, 45% 100%, 25% 100%, 30% 75%, 5% 75%, 0% 60%, 
+                15% 45%, 35% 40%, 35% 20%
+            );
+        }
+        
+        /* The Dino's Eye */
+        #dino::after {
+            content: '';
+            position: absolute;
+            top: 15%; right: 15%;
+            width: 4px; height: 4px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* REDUCED SIZE CACTUS */
+        #cactus {
+            width: 22px; height: 42px; position: absolute;
+            bottom: 12%; right: -100px; background: var(--cactus-green);
+            z-index: 9; clip-path: polygon(30% 0, 70% 0, 70% 100%, 30% 100%, 30% 70%, 10% 70%, 10% 40%, 30% 40%, 30% 20%, 70% 20%, 70% 40%, 90% 40%, 90% 70%, 70% 70%);
+        }
+
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 40;
+        }
+
+        .btn-start {
+            padding: 12px 24px; background: var(--ground); color: #000;
+            font-weight: 800; border-radius: 8px; text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .game-footer {
+            width: 92vw; max-width: 700px; margin-top: 15px; padding: 12px;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
+            border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;
+        }
+        .footer-line { width: 35px; height: 3px; background: var(--ground); margin: 0 auto 8px; border-radius: 2px; }
+        .copyright { margin: 0; color: #94a3b8; font-size: 11px; }
+        .brand { color: var(--ground); font-weight: 800; }
+
+        .ember { position: absolute; background: #fff; border-radius: 50%; pointer-events: none; opacity: 0.2; }
+    </style>
+</head>
+<body>
+
+    <div class="header-panel">
+        <div><div class="stat-label">HIGH SCORE</div><div class="stat-value" id="high-score">00000</div></div>
+        <div><div class="stat-label">SPEED</div><div class="stat-value" id="speed-val">1.0x</div></div>
+        <div><div class="stat-label">DISTANCE</div><div class="stat-value" id="score">00000</div></div>
+    </div>
+
+    <div class="game-container" id="gameBox">
+        <div class="game-title">DINO GAME</div>
+        <div id="overlay">
+            <div class="btn-start">Tap to Start</div>
+            <p style="font-size: 10px; margin-top: 10px; color: #94a3b8;">Single Tap to Jump</p>
+        </div>
+        <div id="dino"></div>
+        <div id="cactus"></div>
+        <div class="ground-floor"></div>
+    </div>
+
+    <footer class="game-footer">
+        <p class="copyright">© 2026 <span class="brand">Dino Games</span> | By Junayed Ahmed</p>
+    </footer>
+
+    <script>
+        const dino = document.getElementById("dino");
+        const cactus = document.getElementById("cactus");
+        const gameBox = document.getElementById("gameBox");
+        const scoreDisplay = document.getElementById("score");
+        const highScoreDisplay = document.getElementById("high-score");
+        const speedDisplay = document.getElementById("speed-val");
+        const overlay = document.getElementById("overlay");
+
+        let score = 0, highScore = localStorage.getItem("dinoHighScore") || 0;
+        let isAlive = false, gameStarted = false, isNight = false;
+        
+        let currentPos = -800; 
+        let gameSpeed = 7.5; 
+        let dinoY = 0, velocityY = 0;
+        const gravity = 0.85; // Slightly heavier gravity for smaller dino
+
+        highScoreDisplay.innerText = highScore.toString().padStart(5, '0');
+
+        function handleInput(e) {
+            if (e && e.cancelable) e.preventDefault();
+            if (!gameStarted) { startGame(); return; }
+            if (isAlive && dinoY === 0) { velocityY = -14; }
+        }
+
+        document.addEventListener("touchstart", handleInput, { passive: false });
+        document.addEventListener("keydown", (e) => { if(e.code==="Space" || e.code==="ArrowUp") handleInput(e); });
+
+        function createCloud() {
+            const cloud = document.createElement("div");
+            cloud.className = "cloud";
+            const width = Math.random() * 70 + 50;
+            cloud.style.width = width + "px";
+            cloud.style.height = (width / 2.5) + "px";
+            cloud.style.top = Math.random() * 35 + 10 + "%";
+            cloud.style.right = "-150px";
+            gameBox.appendChild(cloud);
+
+            let cloudPos = -150;
+            let moveCloud = setInterval(() => {
+                if(!isAlive) { clearInterval(moveCloud); return; }
+                cloudPos += (gameSpeed * 0.4);
+                cloud.style.right = cloudPos + "px";
+                if (cloudPos > gameBox.clientWidth + 150) { clearInterval(moveCloud); cloud.remove(); }
+            }, 20);
+        }
+
+        function checkDayNight() {
+            let currentScore = Math.floor(score/5);
+            if (currentScore >= 200 && !isNight) {
+                isNight = true;
+                document.documentElement.style.setProperty('--sky-top', '#020617');
+                document.documentElement.style.setProperty('--sky-bottom', '#1e1b4b');
+                document.documentElement.style.setProperty('--cloud-color', 'rgba(139, 92, 246, 0.2)');
+            }
+        }
+
+        function startGame() {
+            gameStarted = true; isAlive = true;
+            overlay.style.display = "none";
+            setInterval(() => { if(isAlive) createCloud(); }, 3000);
+            requestAnimationFrame(loop);
+        }
+
+        function loop() {
+            if (!isAlive) return;
+
+            velocityY += gravity;
+            dinoY += velocityY;
+            if (dinoY > 0) { dinoY = 0; velocityY = 0; }
+            dino.style.transform = `translateY(${dinoY}px)`;
+
+            currentPos += gameSpeed;
+            if (currentPos > (gameBox.clientWidth + 100)) {
+                currentPos = -(Math.floor(Math.random() * 500 + 200)); 
+            }
+            cactus.style.right = currentPos + "px";
+
+            score++;
+            gameSpeed += 0.002; 
+            checkDayNight();
+            
+            scoreDisplay.innerText = Math.floor(score/5).toString().padStart(5, '0');
+            speedDisplay.innerText = (gameSpeed / 7.5).toFixed(1) + "x";
+
+            // Collision Detection (Hitbox refined for smaller elements)
+            let d = dino.getBoundingClientRect();
+            let c = cactus.getBoundingClientRect();
+
+            if (d.right - 12 > c.left && d.left + 12 < c.right && d.bottom - 5 > c.top) {
+                gameOver(); return;
+            }
+            requestAnimationFrame(loop);
+        }
+
+        function gameOver() {
+            isAlive = false;
+            if (Math.floor(score/5) > highScore) localStorage.setItem("dinoHighScore", Math.floor(score/5));
+            setTimeout(() => { alert("GAME OVER\nScore: " + scoreDisplay.innerText); location.reload(); }, 200);
+        }
+
+        setInterval(() => {
+            if (!isAlive) return;
+            const ember = document.createElement("div");
+            ember.className = "ember";
+            const size = Math.random() * 2 + 1;
+            ember.style.width = size + "px"; ember.style.height = size + "px";
+            ember.style.left = gameBox.clientWidth + "px";
+            ember.style.top = Math.random() * (gameBox.clientHeight - 40) + "px";
+            gameBox.appendChild(ember);
+            let x = gameBox.clientWidth;
+            let m = setInterval(() => {
+                x -= gameSpeed; ember.style.left = x + "px";
+                if (x < -10) { clearInterval(m); ember.remove(); }
+            }, 20);
+        }, 400);
+    </script>
+</body>
+</html>
