@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/jpeg" href="DinoLogo.png">
+    <title>Dino Games</title>
+    
+    <style>
+        :root {
+            --sky-top: #0f172a;
+            --sky-bottom: #1e293b;
+            --ground: #eab308;
+            --dino-black: #000000;
+            --cactus-green: #22c55e;
+            --transition-speed: 2s;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #020617;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            color: white;
+            touch-action: none;
+        }
+
+        .header-panel {
+            width: 95vw;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 12px 12px 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-sizing: border-box;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 800;
+            font-family: monospace;
+        }
+
+        .game-container {
+            position: relative;
+            width: 95vw;
+            max-width: 1000px;
+            height: 60vh;
+            max-height: 450px;
+            background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+            transition: background var(--transition-speed);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .game-title {
+            position: absolute;
+            top: 15px;
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 5px;
+            color: rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .shake {
+            animation: shake 0.2s ease-in-out 2;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .ground-floor {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background: var(--ground);
+            border-top: 4px solid #ca8a04;
+            z-index: 5;
+        }
+
+        .game-footer {
+            width: 1000px;
+            max-width: 95vw;
+            margin-top: 20px;
+            padding: 20px 0;
+            background: rgba(15, 23, 42, 0.6);
+            /* Glass effect */
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .copyright {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand {
+            color: #eab308;
+            /* Matching your ground color */
+            font-weight: 700;
+        }
+
+        .author {
+            color: #fff;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .author:hover {
+            color: #22c55e;
+            /* Dino green glow on hover */
+        }
+
+        .separator {
+            margin: 0 10px;
+            color: #334155;
+        }
+
+        .rights {
+            margin: 0;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+        }
+
+        /* Adds a subtle glow line at the very top of the footer */
+        .footer-line {
+            width: 50px;
+            height: 2px;
+            background: #eab308;
+            margin: 0 auto 10px;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
+        }
+
+        #dino {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            bottom: 40px;
+            left: 50px;
+            background: var(--dino-black);
+            z-index: 10;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 50%, 75% 50%, 85% 65%, 85% 100%, 65% 100%, 65% 85%, 35% 85%, 35% 100%, 15% 100%, 15% 65%, 0% 65%, 0% 25%);
+        }
+
+        #dino::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 5px;
+            height: 5px;
+            background: #fff;
+            border-radius: 50%;
+        }
+
+        #cactus {
+            width: 30px;
+            height: 55px;
+            position: absolute;
+            bottom: 40px;
+            right: -100px;
+            background: var(--cactus-green);
+            z-index: 9;
+            clip-path: polygon(30% 0, 70% 0, 70% 100%, 30% 100%, 30% 70%, 10% 70%, 10% 40%, 30% 40%, 30% 20%, 70% 20%, 70% 40%, 90% 40%, 90% 70%, 70% 70%);
+            border-left: 4px solid #16a34a;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .ember {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-panel">
+        <div>
+            <div class="stat-label">HIGH SCORE</div>
+            <div class="stat-value" id="high-score">00000</div>
+        </div>
+        <div>
+            <div class="stat-label">SPEED</div>
+            <div class="stat-value" id="speed-val">1.0x</div>
+        </div>
+        <div>
+            <div class="stat-label">DISTANCE</div>
+            <div class="stat-value" id="score">00000</div>
+        </div>
+    </div>
+
+    <div class="game-container" id="gameBox">
+        <div class="game-title">DINO Game</div>
+        <div id="overlay">Tap or Press Space to Start</div>
+        <div id="dino"></div>
+        <div id="cactus"></div>
+        <div class="ground-floor"></div>
+    </div>
+
+    <footer class="game-footer">
+        <div class="footer-content">
+
+            <p class="copyright">
+                © 2026 <span class="brand">Dino Games</span>
+                <span class="separator">|</span>
+                Developed by <span class="author">Junayed Ahmed</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const dino = document.getElementById("dino");
+        const cactus = document.getElementById("cactus");
+        const gameBox = document.getElementById("gameBox");
+        const scoreDisplay = document.getElementById("score");
+        const highScoreDisplay = document.getElementById("high-score");
+        const speedDisplay = document.getElementById("speed-val");
+        const overlay = document.getElementById("overlay");
+
+        let score = 0;
+        let highScore = localStorage.getItem("dinoHighScore") || 0;
+        let isAlive = false;
+        let gameStarted = false;
+        let currentPos = -100;
+        let gameSpeed = 10;
+
+        let dinoY = 0;
+        let velocityY = 0;
+        let jumpCount = 0;
+        const gravity = 0.8;
+
+        highScoreDisplay.innerText = highScore.toString().padStart(5, '0');
+
+        function handleInput(e) {
+            if (e && e.cancelable) e.preventDefault();
+            if (!gameStarted) {
+                startGame();
+                return;
+            }
+            if (isAlive && jumpCount < 2) {
+                velocityY = -15;
+                jumpCount++;
+            }
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space" || e.code === "ArrowUp") handleInput(e);
+        });
+
+        document.addEventListener("touchstart", handleInput, { passive: false });
+
+        function startGame() {
+            gameStarted = true;
+            isAlive = true;
+            overlay.style.display = "none";
+            requestAnimationFrame(loop);
+        }
+
+        function updateEnvironment() {
+            if (score > 1000 && score < 2000) {
+                document.documentElement.style.setProperty('--sky-top', '#312e81');
+                document.documentElement.style.setProperty('--sky-bottom', '#4c1d95');
+            } else if (score >= 2000) {
+                document.documentElement.style.setProperty('--sky-top', '#020617');
+                document.documentElement.style.setProperty('--sky-bottom', '#0f172a');
+            }
+        }
+
+        function loop() {
+            if (!isAlive) return;
+
+            // Physics
+            velocityY += gravity;
+            dinoY += velocityY;
+            if (dinoY > 0) {
+                dinoY = 0;
+                velocityY = 0;
+                jumpCount = 0;
+            }
+            dino.style.transform = `translateY(${dinoY}px)`;
+
+            currentPos += gameSpeed;
+
+            // If the cactus has gone off screen
+            if (currentPos > (gameBox.clientWidth + 100)) {
+                // Calculate a random gap between 0 and 600 pixels
+                let randomGap = Math.floor(Math.random() * 600);
+                // Reset position to the left with that random gap
+                currentPos = -randomGap;
+            }
+            cactus.style.right = currentPos + "px";
+
+            score++;
+            gameSpeed += 0.003;
+            updateEnvironment();
+
+            scoreDisplay.innerText = Math.floor(score / 5).toString().padStart(5, '0');
+            speedDisplay.innerText = (gameSpeed / 10).toFixed(1) + "x";
+
+            let d = dino.getBoundingClientRect();
+            let c = cactus.getBoundingClientRect();
+
+            if (d.right - 15 > c.left && d.left + 15 < c.right && d.bottom - 8 > c.top) {
+                gameOver();
+                return;
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        function gameOver() {
+            isAlive = false;
+            gameBox.classList.add("shake");
+            if (Math.floor(score / 5) > highScore) {
+                localStorage.setItem("dinoHighScore", Math.floor(score / 5));
+            }
+            setTimeout(() => {
+                alert("GAME OVER\nDistance: " + scoreDisplay.innerText);
+                location.reload();
+            }, 300);
+        }
+
+        // Particle logic
+        setInterval(() => {
+            if (!isAlive && gameStarted) return;
+            const ember = document.createElement("div");
+            ember.className = "ember";
+            const size = Math.random() * 3 + 1;
+            ember.style.width = size + "px"; ember.style.height = size + "px";
+            ember.style.left = (gameBox.clientWidth) + "px";
+            ember.style.top = Math.random() * (gameBox.clientHeight - 50) + "px";
+            gameBox.appendChild(ember);
+
+            let x = gameBox.clientWidth;
+            let m = setInterval(() => {
+                x -= gameSpeed;
+                ember.style.left = x + "px";
+                if (x < -10) { clearInterval(m); ember.remove(); }
+            }, 20);
+        }, 200);
+
+    </script>
+</body>
+</html>
